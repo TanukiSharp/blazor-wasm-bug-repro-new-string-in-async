@@ -1,0 +1,31 @@
+@page "/"
+
+<h3>.NET 10 WASM Bug: char[] in async state machine</h3>
+
+<button @onclick="RunTest">Run Test</button>
+
+<pre>@_output</pre>
+
+@code {
+    private string _output = "Click the button to run the test.";
+
+    private async Task RunTest()
+    {
+        _output = "Running 10 rounds...\n\n";
+
+        for (int round = 1; round <= 10; round++)
+        {
+            var d = await BugRepro.SecretGenerator.GenerateAsync();
+            string status = d.DirectStringLength == 4 ? "OK" : "*** BUG ***";
+            _output += $"Round {round,2}: {status}\n";
+            _output += $"  result is null:       {d.IsNull}\n";
+            _output += $"  result.Length:        {d.ArrayLength}\n";
+            _output += $"  new string(result):   len={d.DirectStringLength} \"{d.DirectString}\"\n";
+            _output += $"  new string(ToArray): len={d.CopiedStringLength} \"{d.CopiedString}\"\n";
+            _output += "\n";
+            StateHasChanged();
+        }
+
+        _output += "\nDone.";
+    }
+}
